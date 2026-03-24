@@ -1,7 +1,7 @@
 {
   "name": "Bookmark Manager Workshop",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install && cd server && npm install && npx prisma generate && cd ../client && npm install",
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install && cd server && npm install && npx prisma generate && npx prisma migrate dev --name init && cd ../client && npm install",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },

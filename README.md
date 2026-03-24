@@ -33,6 +33,6 @@ npm run dev
 ├── server/package.json          ← 백엔드 의존성
 ├── client/src/main.tsx          ← React 엔트리포인트
 ├── client/package.json          ← 프론트엔드 의존성
-├── seed.ts                      ← 시드 데이터 (API 완성 후 사용)
+├── server/seed.ts               ← 시드 데이터 (API 완성 후 사용)
 └── server/src/                  ← (비어있음 — 여기서부터 시작!)
 ```
