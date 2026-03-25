@@ -37,6 +37,17 @@ app.get("/api/bookmarks", async (req, res) => {
   res.json(bookmarks);
 });
 
+// GET /api/bookmarks/:id
+app.get("/api/bookmarks/:id", async (req, res) => {
+  const id = res.locals.id as number;
+  const bookmark = await prisma.bookmark.findUnique({ where: { id } });
+  if (!bookmark) {
+    res.status(404).json({ error: "Bookmark not found" });
+    return;
+  }
+  res.json(bookmark);
+});
+
 // POST /api/bookmarks
 app.post("/api/bookmarks", async (req, res) => {
   const { url, title, description, tags, favorite } = req.body;
@@ -73,6 +84,32 @@ app.post("/api/bookmarks", async (req, res) => {
       return;
     }
     throw e;
+  }
+});
+
+// PUT /api/bookmarks/:id
+app.put("/api/bookmarks/:id", async (req, res) => {
+  const id = res.locals.id as number;
+  const { url, title, description, tags, favorite } = req.body;
+  try {
+    const bookmark = await prisma.bookmark.update({
+      where: { id },
+      data: { url, title, description, tags, favorite },
+    });
+    res.json(bookmark);
+  } catch {
+    res.status(404).json({ error: "Bookmark not found" });
+  }
+});
+
+// DELETE /api/bookmarks/:id
+app.delete("/api/bookmarks/:id", async (req, res) => {
+  const id = res.locals.id as number;
+  try {
+    await prisma.bookmark.delete({ where: { id } });
+    res.status(204).send();
+  } catch {
+    res.status(404).json({ error: "Bookmark not found" });
   }
 });
 
