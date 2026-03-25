@@ -32,6 +32,8 @@ export default function ApiTester() {
   const [createForm, setCreateForm] = useState({ url: "", title: "", description: "", tags: "" });
   const [editForm, setEditForm] = useState({ url: "", title: "", description: "", tags: "", favorite: false });
 
+  const [tagFilter, setTagFilter] = useState("");
+
   const [customMethod, setCustomMethod] = useState("GET");
   const [customPath, setCustomPath] = useState("/api/bookmarks");
   const [customBody, setCustomBody] = useState("");
@@ -63,8 +65,9 @@ export default function ApiTester() {
     [addLog],
   );
 
-  const fetchBookmarks = useCallback(async () => {
-    const { data } = await apiFetch("GET", "/api/bookmarks");
+  const fetchBookmarks = useCallback(async (tags?: string) => {
+    const params = tags ? `?tags=${tags}` : "";
+    const { data } = await apiFetch("GET", `/api/bookmarks${params}`);
     if (Array.isArray(data)) setBookmarks(data);
   }, [apiFetch]);
 
@@ -145,7 +148,7 @@ export default function ApiTester() {
           <div className="flex gap-2">
             <button onClick={handleSeed} className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200">Seed DB</button>
             <button onClick={() => apiFetch("GET", "/api/health")} className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200">Health</button>
-            <button onClick={fetchBookmarks} className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Reload</button>
+            <button onClick={() => fetchBookmarks()} className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Reload</button>
             <button onClick={runErrorTests} className="px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200">Error Tests</button>
           </div>
         </div>
@@ -170,10 +173,32 @@ export default function ApiTester() {
 
           {/* List */}
           <section className="bg-white rounded-lg shadow">
-            <div className="px-4 py-3 border-b">
+            <div className="px-4 py-3 border-b space-y-2">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                 GET /api/bookmarks <span className="ml-2 text-gray-400">({bookmarks.length})</span>
               </h2>
+              <div className="flex gap-2">
+                <input
+                  placeholder="Filter by tags (comma-separated)"
+                  value={tagFilter}
+                  onChange={(e) => setTagFilter(e.target.value)}
+                  className="flex-1 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+                <button
+                  onClick={() => fetchBookmarks(tagFilter.trim() || undefined)}
+                  className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                >
+                  Filter
+                </button>
+                {tagFilter && (
+                  <button
+                    onClick={() => { setTagFilter(""); fetchBookmarks(); }}
+                    className="px-3 py-1.5 text-sm text-gray-400 hover:text-gray-600"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
             {bookmarks.length === 0 ? (
               <p className="p-4 text-gray-400 text-sm text-center">No bookmarks. Try "Seed DB" or create one above.</p>
