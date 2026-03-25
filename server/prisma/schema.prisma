@@ -9,7 +9,7 @@ datasource db {
 
 model Bookmark {
   id          Int      @id @default(autoincrement())
-  url         String
+  url         String   @unique
   title       String
   description String?
   tags        String   @default("[]")
