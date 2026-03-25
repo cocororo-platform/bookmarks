@@ -57,11 +57,11 @@ describe("POST /api/bookmarks", () => {
 describe("GET /api/bookmarks", () => {
   beforeEach(async () => {
     await prisma.bookmark.deleteMany();
-    await prisma.bookmark.createMany({
-      data: [
-        { url: "https://a.com", title: "A" },
-        { url: "https://b.com", title: "B" },
-      ],
+    await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A", createdAt: new Date("2024-01-01") },
+    });
+    await prisma.bookmark.create({
+      data: { url: "https://b.com", title: "B", createdAt: new Date("2024-01-02") },
     });
   });
 
