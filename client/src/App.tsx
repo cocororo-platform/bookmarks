@@ -48,7 +48,11 @@ function BookmarkApp() {
   };
 
   const handleToggleFavorite = async (id: number) => {
-    await toggleFavorite(id);
+    try {
+      await toggleFavorite(id);
+    } catch {
+      /* keep empty */
+    }
     await load();
   };
 

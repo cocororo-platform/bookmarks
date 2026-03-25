@@ -130,10 +130,12 @@ export default function ApiTester() {
     await apiFetch("PUT", "/api/bookmarks/abc", { title: "잘못된 ID" });
     await apiFetch("DELETE", "/api/bookmarks/99999");
     await apiFetch("DELETE", "/api/bookmarks/abc");
+    await apiFetch("PATCH", "/api/bookmarks/99999/favorite");
+    await apiFetch("PATCH", "/api/bookmarks/abc/favorite");
   };
 
   const methodColor = (m: string) => {
-    const map: Record<string, string> = { GET: "bg-blue-100 text-blue-700", POST: "bg-green-100 text-green-700", PUT: "bg-yellow-100 text-yellow-700", DELETE: "bg-red-100 text-red-700" };
+    const map: Record<string, string> = { GET: "bg-blue-100 text-blue-700", POST: "bg-green-100 text-green-700", PUT: "bg-yellow-100 text-yellow-700", PATCH: "bg-orange-100 text-orange-700", DELETE: "bg-red-100 text-red-700" };
     return map[m] ?? "bg-gray-100 text-gray-700";
   };
 
@@ -258,7 +260,7 @@ export default function ApiTester() {
             <form onSubmit={handleCustomRequest} className="space-y-2">
               <div className="flex gap-2">
                 <select value={customMethod} onChange={(e) => setCustomMethod(e.target.value)} className="border rounded px-2 py-1.5 text-sm font-mono bg-white">
-                  <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option>
+                  <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
                 </select>
                 <input value={customPath} onChange={(e) => setCustomPath(e.target.value)} className="flex-1 border rounded px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-300" />
               </div>
