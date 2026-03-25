@@ -138,3 +138,83 @@ describe("GET /api/bookmarks", () => {
     expect(res.body).toHaveLength(3);
   });
 });
+
+describe("GET /api/bookmarks/:id", () => {
+  it("returns a bookmark by id", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A" },
+    });
+    const res = await request(app).get(`/api/bookmarks/${created.id}`);
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe("A");
+  });
+
+  it("returns 404 for non-existent id", async () => {
+    const res = await request(app).get("/api/bookmarks/99999");
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 404 for invalid (non-numeric) id", async () => {
+    const res = await request(app).get("/api/bookmarks/abc");
+    expect(res.status).toBe(404);
+  });
+});
+
+describe("PUT /api/bookmarks/:id", () => {
+  it("updates a bookmark", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A" },
+    });
+    const res = await request(app)
+      .put(`/api/bookmarks/${created.id}`)
+      .send({ title: "Updated", favorite: true });
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe("Updated");
+    expect(res.body.favorite).toBe(true);
+  });
+
+  it("returns 404 for non-existent id", async () => {
+    const res = await request(app).put("/api/bookmarks/99999").send({ title: "X" });
+    expect(res.status).toBe(404);
+  });
+
+  it("partially updates (only specified fields change)", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A", description: "Original" },
+    });
+    const res = await request(app)
+      .put(`/api/bookmarks/${created.id}`)
+      .send({ favorite: true });
+    expect(res.status).toBe(200);
+    expect(res.body.favorite).toBe(true);
+    expect(res.body.title).toBe("A");
+    expect(res.body.description).toBe("Original");
+  });
+});
+
+describe("DELETE /api/bookmarks/:id", () => {
+  it("deletes a bookmark", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A" },
+    });
+    const res = await request(app).delete(`/api/bookmarks/${created.id}`);
+    expect(res.status).toBe(204);
+
+    const check = await prisma.bookmark.findUnique({ where: { id: created.id } });
+    expect(check).toBeNull();
+  });
+
+  it("returns 404 for non-existent id", async () => {
+    const res = await request(app).delete("/api/bookmarks/99999");
+    expect(res.status).toBe(404);
+  });
+
+  it("double delete returns 404", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A" },
+    });
+    await request(app).delete(`/api/bookmarks/${created.id}`);
+    const res = await request(app).delete(`/api/bookmarks/${created.id}`);
+    expect(res.status).toBe(404);
+  });
+});
