@@ -66,9 +66,18 @@ npm test
 | PUT /api/bookmarks/:id | 3 | 수정 성공, 존재하지 않는 id 404, 유효하지 않은 id 400 |
 | DELETE /api/bookmarks/:id | 3 | 삭제 성공, 존재하지 않는 id 404, 유효하지 않은 id 400 |
 
+### 테스트 DB 격리
+
+테스트는 개발 DB(`dev.db`)와 분리된 `test.db`를 사용합니다.
+
+- `vitest.config.ts`에서 `TEST_DATABASE_URL` 환경변수로 테스트 DB 경로 지정
+- `globalSetup`에서 `prisma db push`로 테스트 DB 스키마 적용
+- 테스트 종료 후 `test.db` 자동 삭제
+
 ### 발견된 이슈 및 해결
 
 - **정렬 테스트 실패**: `createMany`로 동시 삽입 시 SQLite의 초 단위 datetime 정밀도로 인해 `createdAt` 정렬 순서가 보장되지 않음. 명시적 `createdAt` 값을 지정하여 해결.
+- **테스트 DB 격리 실패**: Prisma의 `.env` 자동 로딩이 vitest `env` 설정의 `DATABASE_URL`을 덮어씀. `TEST_DATABASE_URL`이라는 별도 환경변수를 사용하여 PrismaClient의 `datasources` 옵션으로 직접 주입하여 해결.
 
 ## scaffold 구조
 

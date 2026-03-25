@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import request from "supertest";
-import { app, prisma } from "./index";
+import { app } from "./index";
+import { prisma } from "./prisma";
 
 beforeAll(async () => {
-  // 테스트 시작 전 DB 초기화
   await prisma.bookmark.deleteMany();
 });
 

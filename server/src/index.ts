@@ -1,9 +1,8 @@
 import express from "express";
 import cors from "cors";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./prisma";
 
 const app = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
@@ -94,4 +93,4 @@ if (process.env.NODE_ENV !== "test") {
   });
 }
 
-export { app, prisma };
+export { app };
