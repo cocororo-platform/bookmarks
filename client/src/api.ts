@@ -16,8 +16,9 @@ export interface CreateBookmarkInput {
   tags?: string;
 }
 
-export async function fetchBookmarks(): Promise<Bookmark[]> {
-  const res = await fetch("/api/bookmarks");
+export async function fetchBookmarks(tags?: string[]): Promise<Bookmark[]> {
+  const params = tags && tags.length > 0 ? `?tags=${tags.join(",")}` : "";
+  const res = await fetch(`/api/bookmarks${params}`);
   if (!res.ok) throw new Error("북마크 목록을 가져올 수 없습니다.");
   return res.json();
 }

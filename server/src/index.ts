@@ -15,10 +15,21 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-// GET /api/bookmarks - 전체 북마크 조회
-app.get("/api/bookmarks", async (_req, res) => {
+// GET /api/bookmarks - 북마크 조회 (선택적 태그 필터)
+app.get("/api/bookmarks", async (req, res) => {
   try {
+    const tagsParam = req.query.tags as string | undefined;
+    const where = tagsParam
+      ? {
+          OR: tagsParam
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .map((tag) => ({ tags: { contains: `"${tag}"` } })),
+        }
+      : undefined;
     const bookmarks = await prisma.bookmark.findMany({
+      where,
       orderBy: { createdAt: "desc" },
     });
     res.json(bookmarks);
