@@ -1,0 +1,8 @@
+[
+  { "url": "https://github.com", "title": "GitHub", "tags": "[\"dev\",\"tool\"]", "favorite": false },
+  { "url": "https://claude.ai", "title": "Claude AI", "tags": "[\"ai\",\"tool\"]", "favorite": true },
+  { "url": "https://tailwindcss.com", "title": "Tailwind CSS", "tags": "[\"dev\",\"design\"]", "favorite": false },
+  { "url": "https://prisma.io", "title": "Prisma ORM", "tags": "[\"dev\",\"db\"]", "favorite": false },
+  { "url": "https://react.dev", "title": "React Docs", "tags": "[\"dev\",\"frontend\"]", "favorite": false },
+  { "url": "https://news.ycombinator.com", "title": "Hacker News", "tags": "[\"news\"]", "favorite": false }
+]
