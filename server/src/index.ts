@@ -1,20 +1,85 @@
-// 워크숍 Part 3에서 이 파일을 Express 서버로 교체합니다.
-// 지금은 scaffold 상태를 확인하기 위한 최소 서버입니다.
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import { Prisma, PrismaClient } from "@prisma/client";
 
-import express from "express";
-
+const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "scaffold", message: "Part 3에서 CRUD API를 구현합니다." });
+app.use(cors());
+app.use(express.json());
+
+// Middleware: parse and validate numeric :id param
+app.param("id", (req: Request, res: Response, next: NextFunction, value: string) => {
+  const id = Number(value);
+  if (Number.isNaN(id)) {
+    res.status(404).json({ error: "Bookmark not found" });
+    return;
+  }
+  res.locals.id = id;
+  next();
+});
+
+// GET /api/bookmarks
+app.get("/api/bookmarks", async (req, res) => {
+  const tagsParam = req.query.tags as string | undefined;
+  const where = tagsParam
+    ? {
+        OR: tagsParam.split(",").map((tag) => ({
+          tags: { contains: `"${tag.trim()}"` },
+        })),
+      }
+    : undefined;
+  const bookmarks = await prisma.bookmark.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(bookmarks);
+});
+
+// POST /api/bookmarks
+app.post("/api/bookmarks", async (req, res) => {
+  const { url, title, description, tags, favorite } = req.body;
+  if (!url || !title) {
+    res.status(400).json({ error: "url and title are required" });
+    return;
+  }
+  if (tags !== undefined) {
+    try {
+      const parsed = JSON.parse(tags);
+      if (!Array.isArray(parsed) || !parsed.every((t: unknown) => typeof t === "string")) {
+        res.status(400).json({ error: "tags must be a JSON array of strings" });
+        return;
+      }
+    } catch {
+      res.status(400).json({ error: "tags must be valid JSON" });
+      return;
+    }
+  }
+  try {
+    const bookmark = await prisma.bookmark.create({
+      data: {
+        url,
+        title,
+        description,
+        tags: tags ?? "[]",
+        favorite: favorite ?? false,
+      },
+    });
+    res.status(201).json(bookmark);
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      res.status(409).json({ error: "A bookmark with this URL already exists" });
+      return;
+    }
+    throw e;
+  }
 });
 
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
-    console.log(`Scaffold server running on http://localhost:${PORT}`);
-    console.log("Part 3에서 이 파일을 CRUD API로 교체합니다.");
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-export { app };
+export { app, prisma };
