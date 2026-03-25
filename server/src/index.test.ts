@@ -118,6 +118,45 @@ describe("PUT /api/bookmarks/:id", () => {
   });
 });
 
+describe("GET /api/bookmarks?tags= (태그 필터)", () => {
+  beforeEach(async () => {
+    await prisma.bookmark.deleteMany();
+    await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A", tags: '["dev","tool"]', createdAt: new Date("2024-01-01") },
+    });
+    await prisma.bookmark.create({
+      data: { url: "https://b.com", title: "B", tags: '["design"]', createdAt: new Date("2024-01-02") },
+    });
+    await prisma.bookmark.create({
+      data: { url: "https://c.com", title: "C", tags: '["dev","design"]', createdAt: new Date("2024-01-03") },
+    });
+  });
+
+  it("단일 태그로 필터링한다", async () => {
+    const res = await request(app).get("/api/bookmarks?tags=design");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    const titles = res.body.map((b: { title: string }) => b.title);
+    expect(titles).toContain("B");
+    expect(titles).toContain("C");
+  });
+
+  it("여러 태그로 OR 필터링한다", async () => {
+    const res = await request(app).get("/api/bookmarks?tags=tool,design");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(3);
+  });
+
+  it("tags 파라미터 없으면 전체를 반환한다", async () => {
+    const res = await request(app).get("/api/bookmarks");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(3);
+  });
+});
+
 describe("DELETE /api/bookmarks/:id", () => {
   let bookmarkId: number;
 
