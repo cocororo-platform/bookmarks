@@ -3,3 +3,5 @@ dist/
 *.db
 *.db-journal
 .env
+.DS_Store
+package-lock.json
