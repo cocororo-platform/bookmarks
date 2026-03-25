@@ -157,6 +157,45 @@ describe("GET /api/bookmarks?tags= (태그 필터)", () => {
   });
 });
 
+describe("PATCH /api/bookmarks/:id/favorite", () => {
+  let bookmarkId: number;
+
+  beforeEach(async () => {
+    await prisma.bookmark.deleteMany();
+    const bookmark = await prisma.bookmark.create({
+      data: { url: "https://fav.com", title: "Fav Test", favorite: false },
+    });
+    bookmarkId = bookmark.id;
+  });
+
+  it("false에서 true로 토글한다", async () => {
+    const res = await request(app).patch(`/api/bookmarks/${bookmarkId}/favorite`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.favorite).toBe(true);
+  });
+
+  it("true에서 false로 토글한다", async () => {
+    await request(app).patch(`/api/bookmarks/${bookmarkId}/favorite`);
+    const res = await request(app).patch(`/api/bookmarks/${bookmarkId}/favorite`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.favorite).toBe(false);
+  });
+
+  it("존재하지 않는 id에 404를 반환한다", async () => {
+    const res = await request(app).patch("/api/bookmarks/99999/favorite");
+
+    expect(res.status).toBe(404);
+  });
+
+  it("유효하지 않은 id에 400을 반환한다", async () => {
+    const res = await request(app).patch("/api/bookmarks/abc/favorite");
+
+    expect(res.status).toBe(400);
+  });
+});
+
 describe("DELETE /api/bookmarks/:id", () => {
   let bookmarkId: number;
 
