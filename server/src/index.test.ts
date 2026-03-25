@@ -192,6 +192,39 @@ describe("PUT /api/bookmarks/:id", () => {
   });
 });
 
+describe("PATCH /api/bookmarks/:id/favorite", () => {
+  it("toggles favorite from false to true", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A" },
+    });
+    expect(created.favorite).toBe(false);
+
+    const res = await request(app).patch(`/api/bookmarks/${created.id}/favorite`);
+    expect(res.status).toBe(200);
+    expect(res.body.favorite).toBe(true);
+  });
+
+  it("toggles favorite from true to false", async () => {
+    const created = await prisma.bookmark.create({
+      data: { url: "https://a.com", title: "A", favorite: true },
+    });
+
+    const res = await request(app).patch(`/api/bookmarks/${created.id}/favorite`);
+    expect(res.status).toBe(200);
+    expect(res.body.favorite).toBe(false);
+  });
+
+  it("returns 404 for non-existent id", async () => {
+    const res = await request(app).patch("/api/bookmarks/99999/favorite");
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 404 for invalid (non-numeric) id", async () => {
+    const res = await request(app).patch("/api/bookmarks/abc/favorite");
+    expect(res.status).toBe(404);
+  });
+});
+
 describe("DELETE /api/bookmarks/:id", () => {
   it("deletes a bookmark", async () => {
     const created = await prisma.bookmark.create({
