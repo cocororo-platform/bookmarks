@@ -83,6 +83,31 @@ app.put("/api/bookmarks/:id", async (req, res) => {
   }
 });
 
+// PATCH /api/bookmarks/:id/favorite - 즐겨찾기 토글
+app.patch("/api/bookmarks/:id/favorite", async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "유효하지 않은 id입니다." });
+    return;
+  }
+
+  try {
+    const existing = await prisma.bookmark.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: "북마크를 찾을 수 없습니다." });
+      return;
+    }
+    const bookmark = await prisma.bookmark.update({
+      where: { id },
+      data: { favorite: !existing.favorite },
+    });
+    res.json(bookmark);
+  } catch (error) {
+    res.status(500).json({ error: "즐겨찾기를 변경할 수 없습니다." });
+  }
+});
+
 // DELETE /api/bookmarks/:id - 북마크 삭제
 app.delete("/api/bookmarks/:id", async (req, res) => {
   const id = Number(req.params.id);
