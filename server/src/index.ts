@@ -102,6 +102,23 @@ app.put("/api/bookmarks/:id", async (req, res) => {
   }
 });
 
+// PATCH /api/bookmarks/:id/favorite
+app.patch("/api/bookmarks/:id/favorite", async (req, res) => {
+  const id = res.locals.id as number;
+  try {
+    const bookmark = await prisma.$transaction(async (tx) => {
+      const existing = await tx.bookmark.findUniqueOrThrow({ where: { id } });
+      return tx.bookmark.update({
+        where: { id },
+        data: { favorite: !existing.favorite },
+      });
+    });
+    res.json(bookmark);
+  } catch {
+    res.status(404).json({ error: "Bookmark not found" });
+  }
+});
+
 // DELETE /api/bookmarks/:id
 app.delete("/api/bookmarks/:id", async (req, res) => {
   const id = res.locals.id as number;
