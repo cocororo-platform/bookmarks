@@ -47,6 +47,19 @@ app.post("/api/bookmarks", async (req, res) => {
     return;
   }
 
+  if (tags !== undefined) {
+    try {
+      const parsed = JSON.parse(tags);
+      if (!Array.isArray(parsed)) {
+        res.status(400).json({ error: "tags는 JSON 배열 문자열이어야 합니다." });
+        return;
+      }
+    } catch {
+      res.status(400).json({ error: "tags는 JSON 배열 문자열이어야 합니다." });
+      return;
+    }
+  }
+
   try {
     const bookmark = await prisma.bookmark.create({
       data: {
@@ -72,10 +85,31 @@ app.put("/api/bookmarks/:id", async (req, res) => {
     return;
   }
 
+  const { url, title, description, tags, favorite } = req.body;
+
+  if (tags !== undefined) {
+    try {
+      const parsed = JSON.parse(tags);
+      if (!Array.isArray(parsed)) {
+        res.status(400).json({ error: "tags는 JSON 배열 문자열이어야 합니다." });
+        return;
+      }
+    } catch {
+      res.status(400).json({ error: "tags는 JSON 배열 문자열이어야 합니다." });
+      return;
+    }
+  }
+
   try {
     const bookmark = await prisma.bookmark.update({
       where: { id },
-      data: req.body,
+      data: {
+        ...(url !== undefined && { url }),
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(tags !== undefined && { tags }),
+        ...(favorite !== undefined && { favorite }),
+      },
     });
     res.json(bookmark);
   } catch (error) {
@@ -93,15 +127,18 @@ app.patch("/api/bookmarks/:id/favorite", async (req, res) => {
   }
 
   try {
-    const existing = await prisma.bookmark.findUnique({ where: { id } });
-    if (!existing) {
+    const bookmark = await prisma.$transaction(async (tx) => {
+      const existing = await tx.bookmark.findUnique({ where: { id } });
+      if (!existing) return null;
+      return tx.bookmark.update({
+        where: { id },
+        data: { favorite: !existing.favorite },
+      });
+    });
+    if (!bookmark) {
       res.status(404).json({ error: "북마크를 찾을 수 없습니다." });
       return;
     }
-    const bookmark = await prisma.bookmark.update({
-      where: { id },
-      data: { favorite: !existing.favorite },
-    });
     res.json(bookmark);
   } catch (error) {
     res.status(500).json({ error: "즐겨찾기를 변경할 수 없습니다." });
@@ -125,8 +162,13 @@ app.delete("/api/bookmarks/:id", async (req, res) => {
   }
 });
 
-// POST /api/seed - test-seed.json으로 DB 리셋
+// POST /api/seed - test-seed.json으로 DB 리셋 (개발 환경 전용)
 app.post("/api/seed", async (_req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    res.status(403).json({ error: "프로덕션 환경에서는 시드를 실행할 수 없습니다." });
+    return;
+  }
+
   try {
     const seedPath = resolve(__dirname, "../test-seed.json");
     const data = JSON.parse(readFileSync(seedPath, "utf-8"));

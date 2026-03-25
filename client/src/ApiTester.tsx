@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface Bookmark {
   id: number;
@@ -22,8 +22,6 @@ interface ApiLog {
   timestamp: string;
 }
 
-let logId = 0;
-
 export default function ApiTester() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [logs, setLogs] = useState<ApiLog[]>([]);
@@ -38,8 +36,9 @@ export default function ApiTester() {
   const [customPath, setCustomPath] = useState("/api/bookmarks");
   const [customBody, setCustomBody] = useState("");
 
+  const logIdRef = useRef(0);
   const addLog = useCallback((log: Omit<ApiLog, "id" | "timestamp">) => {
-    setLogs((prev) => [{ ...log, id: ++logId, timestamp: new Date().toLocaleTimeString() }, ...prev].slice(0, 50));
+    setLogs((prev) => [{ ...log, id: ++logIdRef.current, timestamp: new Date().toLocaleTimeString() }, ...prev].slice(0, 50));
   }, []);
 
   const apiFetch = useCallback(
@@ -236,7 +235,7 @@ export default function ApiTester() {
                         <p className="text-sm text-blue-600 truncate mt-0.5">{b.url}</p>
                         {b.description && <p className="text-xs text-gray-500 mt-0.5">{b.description}</p>}
                         <div className="flex gap-1 mt-1">
-                          {JSON.parse(b.tags).map((tag: string) => (
+                          {(() => { try { return JSON.parse(b.tags); } catch { return []; } })().map((tag: string) => (
                             <span key={tag} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{tag}</span>
                           ))}
                         </div>

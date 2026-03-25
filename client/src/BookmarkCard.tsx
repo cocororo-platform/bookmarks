@@ -7,7 +7,8 @@ interface Props {
 }
 
 export default function BookmarkCard({ bookmark, onDelete, onToggleFavorite }: Props) {
-  const tags: string[] = JSON.parse(bookmark.tags);
+  let tags: string[] = [];
+  try { tags = JSON.parse(bookmark.tags); } catch { /* invalid JSON fallback */ }
 
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 flex flex-col justify-between">
