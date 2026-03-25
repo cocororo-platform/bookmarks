@@ -5,3 +5,4 @@ dist/
 .env
 .DS_Store
 package-lock.json
+server/test-seed.json

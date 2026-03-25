@@ -3,8 +3,23 @@ import { fetchBookmarks, createBookmark, deleteBookmark } from "./api";
 import type { Bookmark, CreateBookmarkInput } from "./api";
 import BookmarkCard from "./BookmarkCard";
 import AddBookmarkForm from "./AddBookmarkForm";
+import ApiTester from "./ApiTester";
 
-export default function App() {
+function usePath() {
+  const [path, setPath] = useState(window.location.pathname);
+  useEffect(() => {
+    const onPop = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  const navigate = (to: string) => {
+    window.history.pushState({}, "", to);
+    setPath(to);
+  };
+  return { path, navigate };
+}
+
+function BookmarkApp() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,15 +28,13 @@ export default function App() {
     try {
       setBookmarks(await fetchBookmarks());
     } catch {
-      /* 에러 시 빈 목록 유지 */
+      /* keep empty */
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const handleAdd = async (input: CreateBookmarkInput) => {
     await createBookmark(input);
@@ -35,24 +48,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">Bookmark Manager</h1>
-          <span className="text-sm text-gray-400">{bookmarks.length} bookmarks</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-400">{bookmarks.length} bookmarks</span>
+            <a href="/tester" onClick={(e) => { e.preventDefault(); window.history.pushState({}, "", "/tester"); window.dispatchEvent(new PopStateEvent("popstate")); }} className="text-sm text-blue-600 hover:underline">API Tester</a>
+          </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-        {/* Add Form */}
         <AddBookmarkForm onAdd={handleAdd} />
 
-        {/* Bookmark List */}
         <section>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-            Bookmarks
-          </h2>
-
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Bookmarks</h2>
           {loading ? (
             <p className="text-center text-gray-400 py-12">Loading...</p>
           ) : bookmarks.length === 0 ? (
@@ -71,4 +81,9 @@ export default function App() {
       </main>
     </div>
   );
+}
+
+export default function App() {
+  const { path } = usePath();
+  return path === "/tester" ? <ApiTester /> : <BookmarkApp />;
 }

@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { prisma } from "./prisma";
 
 const app = express();
@@ -84,6 +86,23 @@ app.delete("/api/bookmarks/:id", async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(404).json({ error: "북마크를 찾을 수 없습니다." });
+  }
+});
+
+// POST /api/seed - test-seed.json으로 DB 리셋
+app.post("/api/seed", async (_req, res) => {
+  try {
+    const seedPath = resolve(__dirname, "../test-seed.json");
+    const data = JSON.parse(readFileSync(seedPath, "utf-8"));
+
+    await prisma.bookmark.deleteMany();
+    for (const b of data) {
+      await prisma.bookmark.create({ data: b });
+    }
+
+    res.json({ message: `Seeded ${data.length} bookmarks.` });
+  } catch (error) {
+    res.status(500).json({ error: "시드 데이터를 로드할 수 없습니다." });
   }
 });
 
