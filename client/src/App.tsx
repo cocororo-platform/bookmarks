@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { fetchBookmarks, createBookmark, deleteBookmark } from "./api";
+import { fetchBookmarks, createBookmark, deleteBookmark, toggleFavorite } from "./api";
 import type { Bookmark, CreateBookmarkInput } from "./api";
 import BookmarkCard from "./BookmarkCard";
 import AddBookmarkForm from "./AddBookmarkForm";
@@ -44,6 +44,11 @@ function BookmarkApp() {
 
   const handleDelete = async (id: number) => {
     await deleteBookmark(id);
+    await load();
+  };
+
+  const handleToggleFavorite = async (id: number) => {
+    await toggleFavorite(id);
     await load();
   };
 
@@ -127,7 +132,7 @@ function BookmarkApp() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredBookmarks.map((b) => (
-                <BookmarkCard key={b.id} bookmark={b} onDelete={handleDelete} />
+                <BookmarkCard key={b.id} bookmark={b} onDelete={handleDelete} onToggleFavorite={handleToggleFavorite} />
               ))}
             </div>
           )}

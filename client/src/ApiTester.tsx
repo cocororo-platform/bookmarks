@@ -102,7 +102,7 @@ export default function ApiTester() {
   };
 
   const toggleFavorite = async (b: Bookmark) => {
-    const { ok } = await apiFetch("PUT", `/api/bookmarks/${b.id}`, { favorite: !b.favorite });
+    const { ok } = await apiFetch("PATCH", `/api/bookmarks/${b.id}/favorite`);
     if (ok) fetchBookmarks();
   };
 

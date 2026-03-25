@@ -3,9 +3,10 @@ import type { Bookmark } from "./api";
 interface Props {
   bookmark: Bookmark;
   onDelete: (id: number) => void;
+  onToggleFavorite: (id: number) => void;
 }
 
-export default function BookmarkCard({ bookmark, onDelete }: Props) {
+export default function BookmarkCard({ bookmark, onDelete, onToggleFavorite }: Props) {
   const tags: string[] = JSON.parse(bookmark.tags);
 
   return (
@@ -13,7 +14,12 @@ export default function BookmarkCard({ bookmark, onDelete }: Props) {
       <div>
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-gray-900 leading-snug">{bookmark.title}</h3>
-          {bookmark.favorite && <span className="text-yellow-500 text-lg shrink-0">★</span>}
+          <button
+            onClick={() => onToggleFavorite(bookmark.id)}
+            className={`text-lg shrink-0 transition-colors ${bookmark.favorite ? "text-yellow-500 hover:text-yellow-600" : "text-gray-300 hover:text-yellow-400"}`}
+          >
+            {bookmark.favorite ? "\u2605" : "\u2606"}
+          </button>
         </div>
         <a
           href={bookmark.url}
